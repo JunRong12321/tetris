@@ -1,0 +1,151 @@
+import { BUFFER_HEIGHT, BOARD_WIDTH, type Board } from "@tetris/game-engine";
+import { cellColor, highlightColor, shadowColor } from "./colors";
+
+export interface RenderOptions {
+  cellSize: number;
+  showGhost?: boolean;
+  ghostY?: number;
+  ghostType?: string;
+  activePiece?: {
+    type: string;
+    cells: readonly (readonly [number, number])[];
+  } | null;
+  paused?: boolean;
+}
+
+function drawCell(
+  ctx: CanvasRenderingContext2D,
+  x: number,
+  y: number,
+  color: string,
+  size: number,
+): void {
+  const px = x * size;
+  const py = y * size;
+  ctx.fillStyle = color;
+  ctx.fillRect(px, py, size, size);
+  ctx.fillStyle = highlightColor(color);
+  ctx.fillRect(px, py, size, Math.max(1, size * 0.12));
+  ctx.fillStyle = shadowColor(color);
+  ctx.fillRect(px, py + size - Math.max(1, size * 0.12), size, Math.max(1, size * 0.12));
+}
+
+export function renderBoard(
+  canvas: HTMLCanvasElement,
+  board: Board,
+  opts: RenderOptions,
+): void {
+  const ctx = canvas.getContext("2d");
+  if (!ctx) return;
+
+  const { cellSize: s, showGhost, ghostY, ghostType, activePiece, paused } = opts;
+  const visibleRows = board.length - BUFFER_HEIGHT;
+
+  canvas.width = BOARD_WIDTH * s;
+  canvas.height = visibleRows * s;
+
+  // Background
+  ctx.fillStyle = "#0f172a";
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+  // Grid lines
+  ctx.strokeStyle = "rgba(255,255,255,0.04)";
+  ctx.lineWidth = 1;
+  for (let x = 1; x < BOARD_WIDTH; x++) {
+    ctx.beginPath();
+    ctx.moveTo(x * s, 0);
+    ctx.lineTo(x * s, canvas.height);
+    ctx.stroke();
+  }
+  for (let y = 1; y < visibleRows; y++) {
+    ctx.beginPath();
+    ctx.moveTo(0, y * s);
+    ctx.lineTo(canvas.width, y * s);
+    ctx.stroke();
+  }
+
+  // Locked blocks (only visible portion)
+  for (let row = BUFFER_HEIGHT; row < board.length; row++) {
+    for (let col = 0; col < BOARD_WIDTH; col++) {
+      const cell = board[row]![col];
+      const color = cellColor(cell);
+      if (color) drawCell(ctx, col, row - BUFFER_HEIGHT, color, s);
+    }
+  }
+
+  // Ghost piece
+  if (showGhost && activePiece && ghostY !== undefined) {
+    ctx.globalAlpha = 0.25;
+    for (const [dx, dy] of activePiece.cells) {
+      const x = activePiece.type ? dx : dx;
+      const y = ghostY + dy - BUFFER_HEIGHT;
+      if (y >= 0 && y < visibleRows) {
+        drawCell(ctx, x, y, "#94a3b8", s);
+      }
+    }
+    ctx.globalAlpha = 1;
+  }
+
+  // Active piece
+  if (activePiece && !paused) {
+    const color = activePiece.type ? getColorForType(activePiece.type) : "#ffffff";
+    for (const [dx, dy] of activePiece.cells) {
+      const y = dy - BUFFER_HEIGHT;
+      if (y >= 0 && y < visibleRows) {
+        drawCell(ctx, dx, y, color, s);
+      }
+    }
+  }
+
+  if (paused) {
+    ctx.fillStyle = "rgba(15, 23, 42, 0.7)";
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.fillStyle = "#e2e8f0";
+    ctx.font = `bold ${s * 1.5}px Inter, sans-serif`;
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.fillText("PAUSED", canvas.width / 2, canvas.height / 2);
+  }
+}
+
+function getColorForType(type: string): string {
+  const colors: Record<string, string> = {
+    I: "#22d3ee",
+    O: "#fbbf24",
+    T: "#a855f7",
+    S: "#22c55e",
+    Z: "#ef4444",
+    J: "#3b82f6",
+    L: "#f97316",
+  };
+  return colors[type] ?? "#ffffff";
+}
+
+export function renderMiniPiece(
+  canvas: HTMLCanvasElement,
+  cells: readonly (readonly [number, number])[],
+  type: string,
+  cellSize: number,
+): void {
+  const ctx = canvas.getContext("2d");
+  if (!ctx) return;
+
+  let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
+  for (const [x, y] of cells) {
+    minX = Math.min(minX, x);
+    maxX = Math.max(maxX, x);
+    minY = Math.min(minY, y);
+    maxY = Math.max(maxY, y);
+  }
+  const w = (maxX - minX + 1) * cellSize;
+  const h = (maxY - minY + 1) * cellSize;
+  canvas.width = w;
+  canvas.height = h;
+
+  ctx.clearRect(0, 0, w, h);
+
+  const color = getColorForType(type);
+  for (const [x, y] of cells) {
+    drawCell(ctx, x - minX, y - minY, color, cellSize);
+  }
+}
