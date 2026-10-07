@@ -4,11 +4,9 @@ import {
   createGame,
   getGhostPiece,
   getRenderBoard,
-  pieceCells,
   tick,
   type GameState,
   type PlayerAction,
-  BUFFER_HEIGHT,
 } from "@tetris/game-engine";
 import { InputHandler } from "../game/input";
 import { GameBoard } from "./GameBoard";
@@ -83,7 +81,7 @@ export function SoloGame({ onExit, seed, startLevel }: SoloGameProps) {
     <div className="screen game-screen solo-game">
       <header className="game-header">
         <Button variant="ghost" size="md" onClick={onExit}>
-          \u2190 EXIT
+          {"\u2190"} EXIT
         </Button>
         <div className="game-status-tag">SOLO PLAY</div>
         <Button variant="ghost" size="md" onClick={() => {

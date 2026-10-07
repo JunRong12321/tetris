@@ -1,12 +1,6 @@
 import { useEffect, useRef } from "react";
-import {
-  BUFFER_HEIGHT,
-  BOARD_WIDTH,
-  type Board,
-  type ActivePiece,
-} from "@tetris/game-engine";
+import { type Board, type ActivePiece, pieceCells } from "@tetris/game-engine";
 import { renderBoard } from "../game/render";
-import { pieceCells } from "@tetris/game-engine";
 
 interface GameBoardProps {
   board: Board;

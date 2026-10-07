@@ -14,14 +14,7 @@ export const KEY_BINDINGS: Record<string, PlayerAction> = {
   KeyC: "HOLD",
 };
 
-export interface InputState {
-  actions: PlayerAction[];
-  paused: boolean;
-}
-
 export class InputHandler {
-  private actions: PlayerAction[] = [];
-  private pausePressed = false;
   private keyDown = new Set<string>();
   private onAction?: (action: PlayerAction) => void;
   private onPause?: () => void;
@@ -95,7 +88,4 @@ export class InputHandler {
     this.keyDown.clear();
   }
 
-  flushActions(): PlayerAction[] {
-    return this.actions.splice(0);
-  }
 }

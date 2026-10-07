@@ -8,7 +8,7 @@ type Screen = "landing" | "solo" | "versus";
 export function App() {
   const [screen, setScreen] = useState<Screen>("landing");
   const [seed, setSeed] = useState<number>(0);
-  const [startLevel, setStartLevel] = useState<number>(1);
+  const [startLevel] = useState<number>(1);
 
   const startSolo = useCallback(() => {
     setSeed(Math.floor(Math.random() * 1e9));

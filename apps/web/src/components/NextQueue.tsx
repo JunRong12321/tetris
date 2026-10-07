@@ -1,5 +1,7 @@
+import { useEffect, useRef } from "react";
+import { getCells, type PieceType } from "@tetris/game-engine";
+import { renderMiniPiece } from "../game/render";
 import { PIECE_COLORS } from "../game/colors";
-import type { PieceType } from "@tetris/game-engine";
 
 interface NextQueueProps {
   queue: readonly PieceType[];
@@ -26,10 +28,6 @@ function PiecePreviewItem({ piece, cellSize }: { piece: PieceType; cellSize: num
     </div>
   );
 }
-
-import { useEffect, useRef } from "react";
-import { getCells } from "@tetris/game-engine";
-import { renderMiniPiece } from "../game/render";
 
 function MiniPiece({ type, cellSize }: { type: PieceType; cellSize: number }) {
   const canvasRef = useRef<HTMLCanvasElement>(null);

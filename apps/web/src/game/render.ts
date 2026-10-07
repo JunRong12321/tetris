@@ -5,7 +5,6 @@ export interface RenderOptions {
   cellSize: number;
   showGhost?: boolean;
   ghostY?: number;
-  ghostType?: string;
   activePiece?: {
     type: string;
     cells: readonly (readonly [number, number])[];
@@ -38,7 +37,7 @@ export function renderBoard(
   const ctx = canvas.getContext("2d");
   if (!ctx) return;
 
-  const { cellSize: s, showGhost, ghostY, ghostType, activePiece, paused } = opts;
+  const { cellSize: s, showGhost, ghostY, activePiece, paused } = opts;
   const visibleRows = board.length - BUFFER_HEIGHT;
 
   canvas.width = BOARD_WIDTH * s;

@@ -1,5 +1,3 @@
-import { useEffect, useState } from "react";
-
 type Status = "connected" | "ready" | "waiting" | "disconnected" | "reconnecting";
 
 interface PlayerStatusProps {
