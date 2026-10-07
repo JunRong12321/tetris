@@ -2,7 +2,7 @@ import { Button } from "./Button";
 
 interface LandingScreenProps {
   onSoloPlay: () => void;
-  onLocalMultiplayer: () => void;
+  onOnlineBattle: () => void;
 }
 
 const CONTROLS = [
@@ -15,7 +15,7 @@ const CONTROLS = [
   { keys: "P", action: "PAUSE" },
 ];
 
-export function LandingScreen({ onSoloPlay, onLocalMultiplayer }: LandingScreenProps) {
+export function LandingScreen({ onSoloPlay, onOnlineBattle }: LandingScreenProps) {
   return (
     <div className="screen landing-screen">
       <div className="landing-content">
@@ -28,8 +28,8 @@ export function LandingScreen({ onSoloPlay, onLocalMultiplayer }: LandingScreenP
           <Button variant="primary" size="lg" onClick={onSoloPlay}>
             SOLO PLAY
           </Button>
-          <Button variant="secondary" size="lg" onClick={onLocalMultiplayer}>
-            LOCAL VERSUS
+          <Button variant="secondary" size="lg" onClick={onOnlineBattle}>
+            ONLINE BATTLE
           </Button>
         </div>
 

@@ -24,7 +24,7 @@ export function GameBoard({
     if (!canvas) return;
 
     const activeData = activePiece
-      ? { type: activePiece.type, cells: pieceCells(activePiece) }
+      ? { type: activePiece.type, y: activePiece.y, cells: pieceCells(activePiece) }
       : null;
 
     renderBoard(canvas, board, {

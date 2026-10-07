@@ -11,6 +11,7 @@
   },
   "dependencies": {
     "@tetris/game-engine": "*",
+    "@tetris/protocol": "*",
     "react": "^19.1.0",
     "react-dom": "^19.1.0"
   },

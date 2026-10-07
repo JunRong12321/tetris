@@ -1,0 +1,11 @@
+services:
+  - type: web
+    name: online-tetris-server
+    runtime: node
+    plan: free
+    buildCommand: npm ci && npm run build
+    startCommand: npm run start --workspace @tetris/server
+    healthCheckPath: /health
+    envVars:
+      - key: NODE_VERSION
+        value: "22"

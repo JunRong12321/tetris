@@ -24,7 +24,11 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci
+      - name: Configure GitHub Pages
+        uses: actions/configure-pages@v5
       - run: npm run build
+        env:
+          VITE_SERVER_URL: ${{ vars.VITE_SERVER_URL }}
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:

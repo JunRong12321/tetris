@@ -7,6 +7,7 @@ export interface RenderOptions {
   ghostY?: number;
   activePiece?: {
     type: string;
+    y: number;
     cells: readonly (readonly [number, number])[];
   } | null;
   paused?: boolean;
@@ -76,8 +77,8 @@ export function renderBoard(
   if (showGhost && activePiece && ghostY !== undefined) {
     ctx.globalAlpha = 0.25;
     for (const [dx, dy] of activePiece.cells) {
-      const x = activePiece.type ? dx : dx;
-      const y = ghostY + dy - BUFFER_HEIGHT;
+      const x = dx;
+      const y = ghostY + (dy - activePiece.y) - BUFFER_HEIGHT;
       if (y >= 0 && y < visibleRows) {
         drawCell(ctx, x, y, "#94a3b8", s);
       }

@@ -1,7 +1,7 @@
 import { useState, useCallback } from "react";
 import { LandingScreen } from "./components/LandingScreen";
 import { SoloGame } from "./components/SoloGame";
-import { LocalMultiplayer } from "./components/LocalMultiplayer";
+import { OnlineBattle } from "./components/OnlineBattle";
 
 type Screen = "landing" | "solo" | "versus";
 
@@ -15,7 +15,7 @@ export function App() {
     setScreen("solo");
   }, []);
 
-  const startVersus = useCallback(() => {
+  const startOnlineBattle = useCallback(() => {
     setSeed(Math.floor(Math.random() * 1e9));
     setScreen("versus");
   }, []);
@@ -25,14 +25,12 @@ export function App() {
   return (
     <div className="app">
       {screen === "landing" && (
-        <LandingScreen onSoloPlay={startSolo} onLocalMultiplayer={startVersus} />
+        <LandingScreen onSoloPlay={startSolo} onOnlineBattle={startOnlineBattle} />
       )}
       {screen === "solo" && (
         <SoloGame key={seed} onExit={exitToMenu} seed={seed} startLevel={startLevel} />
       )}
-      {screen === "versus" && (
-        <LocalMultiplayer key={seed} onExit={exitToMenu} seed={seed} startLevel={startLevel} />
-      )}
+      {screen === "versus" && <OnlineBattle onExit={exitToMenu} />}
     </div>
   );
 }
