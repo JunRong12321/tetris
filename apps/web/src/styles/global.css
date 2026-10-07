@@ -655,6 +655,212 @@ body {
   .result-title { font-size: 24px; }
 }
 
+/* ----- Online Battle ----- */
+.online-screen {
+  background: radial-gradient(ellipse at center, #131829 0%, var(--background) 72%);
+}
+
+.online-panel {
+  width: min(92vw, 520px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-5);
+  padding: var(--space-8);
+  background: rgba(19, 24, 41, 0.92);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: 0 24px 70px rgba(0, 0, 0, 0.35);
+}
+
+.online-panel > .btn-ghost {
+  align-self: flex-start;
+}
+
+.online-title {
+  font-size: 32px;
+  line-height: 1.2;
+  letter-spacing: 0.12em;
+  text-align: center;
+}
+
+.online-description,
+.lobby-help,
+.online-result-copy {
+  color: var(--text-secondary);
+  line-height: 1.5;
+  text-align: center;
+}
+
+.eyebrow {
+  color: var(--accent);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.2em;
+}
+
+.connection-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid var(--border);
+  border-radius: 99px;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+}
+
+.connection-connected { color: var(--success); border-color: rgba(34, 197, 94, 0.35); }
+.connection-connecting { color: var(--warning); border-color: rgba(251, 191, 36, 0.35); }
+.connection-offline { color: var(--danger); border-color: rgba(239, 68, 68, 0.35); }
+
+.online-actions {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  width: 100%;
+}
+
+.join-row {
+  display: flex;
+  gap: var(--space-2);
+}
+
+.room-input {
+  min-width: 0;
+  flex: 1;
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-md);
+  background: var(--surface-elevated);
+  color: var(--text-primary);
+  font-family: var(--font-mono);
+  font-size: 18px;
+  letter-spacing: 0.15em;
+  text-align: center;
+  outline: none;
+}
+
+.room-input:focus {
+  border-color: var(--focus);
+  box-shadow: 0 0 0 2px rgba(34, 211, 238, 0.15);
+}
+
+.error-message {
+  width: 100%;
+  color: #fca5a5;
+  font-size: 13px;
+  text-align: center;
+}
+
+.room-code {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  align-items: center;
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-md);
+  background: var(--surface-elevated);
+  color: var(--accent);
+  cursor: pointer;
+  font-family: var(--font-mono);
+  font-size: 36px;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  padding: var(--space-4) var(--space-8);
+}
+
+.room-code span {
+  color: var(--text-muted);
+  font-family: var(--font-sans);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+}
+
+.lobby-players {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-4);
+  width: 100%;
+}
+
+.lobby-player {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: var(--space-2);
+  min-height: 76px;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--surface-elevated);
+}
+
+.lobby-player strong { font-size: 14px; letter-spacing: 0.08em; }
+.lobby-player span { font-size: 11px; letter-spacing: 0.12em; }
+.state-good { color: var(--success); }
+.state-muted { color: var(--text-muted); }
+
+.lobby-countdown {
+  color: var(--accent);
+  font-family: var(--font-mono);
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+}
+
+.online-layout {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-6);
+  overflow: auto;
+  padding: var(--space-4);
+}
+
+.online-main-board,
+.online-opponent-column,
+.online-side-panel {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.online-main-board .board-wrapper { box-shadow: 0 0 44px rgba(34, 211, 238, 0.12); }
+.online-opponent-column .board-wrapper { opacity: 0.9; }
+.online-player-label {
+  color: var(--text-secondary);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+}
+
+.online-stats,
+.online-opponent-stats {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-2);
+  color: var(--text-muted);
+  font-size: 10px;
+  letter-spacing: 0.08em;
+}
+
+.online-stats strong {
+  color: var(--text-primary);
+  font-family: var(--font-mono);
+  font-size: 16px;
+  margin-left: var(--space-2);
+}
+
+.online-side-panel {
+  align-self: center;
+}
+
 /* ----- Reduced Motion ----- */
 @media (prefers-reduced-motion: reduce) {
   * {

@@ -1,7 +1,7 @@
 # Technical Architecture
 ## Online Multiplayer Tetris
 
-**Status:** Draft for review  
+**Status:** MVP implementation  
 **Version:** 0.1
 
 ---
@@ -451,7 +451,11 @@ For the first implementation, it is acceptable to use a simpler authoritative up
 
 ---
 
-## 15. Persistence
+## 15. Deployment boundary
+
+GitHub Pages serves the static React client. It cannot run the authoritative WebSocket process. The server is deployed separately on a WebSocket-capable Node host and exposes a health endpoint for monitoring. The client receives the server WebSocket address at build time through `VITE_SERVER_URL`.
+
+## 16. Persistence
 
 MVP:
 
@@ -466,7 +470,7 @@ Do not add a database merely because the project is multiplayer.
 
 ---
 
-## 16. Scaling Path
+## 17. Scaling Path
 
 ### Stage 1
 
@@ -486,7 +490,7 @@ Do not build distributed infrastructure before it is needed.
 
 ---
 
-## 17. Frontend State
+## 18. Frontend State
 
 Separate:
 
@@ -515,7 +519,7 @@ Avoid placing every animation frame into global React state.
 
 ---
 
-## 18. Rendering
+## 19. Rendering
 
 The game board should be rendered using either:
 
@@ -530,7 +534,7 @@ UI panels should remain normal HTML for accessibility.
 
 ---
 
-## 19. Testing Strategy
+## 20. Testing Strategy
 
 ### Unit tests
 
@@ -582,7 +586,7 @@ Use two browser contexts:
 
 ---
 
-## 20. CI/CD
+## 21. CI/CD
 
 Every pull request should run:
 
@@ -597,7 +601,7 @@ Main branch should only receive changes that pass required checks.
 
 ---
 
-## 21. Environment Variables
+## 22. Environment Variables
 
 Never hardcode secrets.
 
@@ -617,7 +621,7 @@ Do not commit `.env`.
 
 ---
 
-## 22. Logging
+## 23. Logging
 
 Structured logs should include:
 
@@ -637,7 +641,7 @@ Avoid logging:
 
 ---
 
-## 23. Failure Strategy
+## 24. Failure Strategy
 
 If WebSocket disconnects:
 
@@ -656,7 +660,7 @@ If server returns invalid protocol:
 
 ---
 
-## 24. GitHub Repository Strategy
+## 25. GitHub Repository Strategy
 
 Recommended branches:
 
@@ -685,7 +689,7 @@ Every meaningful agent-generated change should be reviewable as a commit or pull
 
 ---
 
-## 25. Definition of Done
+## 26. Definition of Done
 
 A feature is done only when:
 
@@ -702,7 +706,7 @@ A feature is done only when:
 
 ---
 
-## 26. Key Architectural Decisions
+## 27. Key Architectural Decisions
 
 ### ADR-001
 
@@ -738,7 +742,7 @@ Prefer simple authoritative synchronization before implementing advanced client 
 
 ---
 
-## 27. Architecture Risks
+## 28. Architecture Risks
 
 | Risk | Impact | Mitigation |
 |---|---|---|
