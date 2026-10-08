@@ -49,6 +49,9 @@ export function OnlineBattle({ onExit }: OnlineBattleProps) {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
   const [countdown, setCountdown] = useState<number | null>(null);
+  const [clearFlash, setClearFlash] = useState(false);
+  const clearFlashTimerRef = useRef<number | null>(null);
+  const lastLinesRef = useRef<{ player: number | null; opponent: number | null }>({ player: null, opponent: null });
   const socketRef = useRef<WebSocket | null>(null);
   const sessionId = useMemo(() => getSessionId(), []);
 
@@ -83,7 +86,10 @@ export function OnlineBattle({ onExit }: OnlineBattleProps) {
 
   useEffect(() => {
     connect();
-    return () => socketRef.current?.close();
+    return () => {
+      socketRef.current?.close();
+      if (clearFlashTimerRef.current !== null) window.clearTimeout(clearFlashTimerRef.current);
+    };
   }, [connect]);
 
   useEffect(() => {
@@ -99,6 +105,18 @@ export function OnlineBattle({ onExit }: OnlineBattleProps) {
     const timer = window.setInterval(update, 100);
     return () => window.clearInterval(timer);
   }, [room?.countdownEndsAt, room?.status]);
+
+  useEffect(() => {
+    const currentLines = match ? { player: match.player.lines, opponent: match.opponent.lines } : { player: null, opponent: null };
+    const previous = lastLinesRef.current;
+    const changed = match !== null && previous.player !== null && (match.player.lines > previous.player || match.opponent.lines > (previous.opponent ?? 0));
+    lastLinesRef.current = currentLines;
+    if (changed) {
+      setClearFlash(true);
+      if (clearFlashTimerRef.current !== null) window.clearTimeout(clearFlashTimerRef.current);
+      clearFlashTimerRef.current = window.setTimeout(() => setClearFlash(false), 300);
+    }
+  }, [match]);
 
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
@@ -180,12 +198,12 @@ export function OnlineBattle({ onExit }: OnlineBattleProps) {
       <div className="online-layout">
         <div className="online-main-board">
           <div className="online-player-label">YOU · PLAYER {room.playerId}</div>
-          <GameBoard board={toBoard(player.board)} activePiece={toActive(player.active)} ghostY={undefined} cellSize={30} />
+          <GameBoard board={toBoard(player.board)} activePiece={toActive(player.active)} ghostY={undefined} cellSize={30} clearFlash={clearFlash} />
           <div className="online-stats"><strong>{player.score.toLocaleString()}</strong><span>SCORE</span><strong>{player.lines}</strong><span>LINES</span><strong>{player.level}</strong><span>LEVEL</span></div>
         </div>
         <div className="online-opponent-column">
           <div className="online-player-label">OPPONENT · PLAYER {room.playerId === 1 ? 2 : 1}</div>
-          <GameBoard board={toBoard(opponent.board)} activePiece={toActive(opponent.active)} cellSize={16} />
+          <GameBoard board={toBoard(opponent.board)} activePiece={toActive(opponent.active)} cellSize={16} clearFlash={clearFlash} />
           <div className="online-opponent-stats"><span>{opponent.score.toLocaleString()} SCORE</span><span>{opponent.lines} LINES</span></div>
         </div>
         <aside className="online-side-panel"><HoldPanel hold={toPiece(player.hold)} /><NextQueue queue={player.queue.map(toPiece).filter(isPiece)} cellSize={12} /></aside>

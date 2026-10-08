@@ -314,6 +314,7 @@ body {
 
 /* ----- Board ----- */
 .board-wrapper {
+  position: relative;
   border: 2px solid var(--border-light);
   border-radius: var(--radius-sm);
   overflow: hidden;
@@ -322,6 +323,32 @@ body {
 
 .game-board-canvas {
   display: block;
+}
+
+.board-wrapper.clear-flash {
+  animation: boardClearFlash 300ms ease-out;
+}
+
+.board-wrapper.clear-flash::after {
+  position: absolute;
+  inset: 0;
+  border: 3px solid rgba(255, 255, 255, 0.9);
+  border-radius: var(--radius-sm);
+  content: "";
+  pointer-events: none;
+  animation: clearSweep 300ms ease-out;
+}
+
+@keyframes boardClearFlash {
+  0% { box-shadow: 0 0 0 rgba(255, 255, 255, 0); }
+  35% { box-shadow: 0 0 34px rgba(255, 255, 255, 0.65); }
+  100% { box-shadow: 0 0 40px rgba(34, 211, 238, 0.08); }
+}
+
+@keyframes clearSweep {
+  0% { opacity: 0; transform: scaleY(0.1); }
+  35% { opacity: 1; transform: scaleY(1); }
+  100% { opacity: 0; transform: scaleY(1); }
 }
 
 /* ----- Panels ----- */

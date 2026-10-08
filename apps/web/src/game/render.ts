@@ -22,12 +22,20 @@ function drawCell(
 ): void {
   const px = x * size;
   const py = y * size;
+  ctx.save();
+  ctx.shadowColor = shadowColor(color);
+  ctx.shadowBlur = Math.max(1, size * 0.1);
+  ctx.shadowOffsetY = Math.max(1, size * 0.06);
   ctx.fillStyle = color;
   ctx.fillRect(px, py, size, size);
+  ctx.restore();
   ctx.fillStyle = highlightColor(color);
   ctx.fillRect(px, py, size, Math.max(1, size * 0.12));
   ctx.fillStyle = shadowColor(color);
   ctx.fillRect(px, py + size - Math.max(1, size * 0.12), size, Math.max(1, size * 0.12));
+  ctx.strokeStyle = "rgba(2, 6, 23, 0.28)";
+  ctx.lineWidth = Math.max(1, size * 0.04);
+  ctx.strokeRect(px + ctx.lineWidth / 2, py + ctx.lineWidth / 2, size - ctx.lineWidth, size - ctx.lineWidth);
 }
 
 export function renderBoard(
