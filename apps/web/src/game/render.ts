@@ -81,17 +81,22 @@ export function renderBoard(
     }
   }
 
-  // Ghost piece
+  // Ghost piece — outlined transparent style so players see the landing spot clearly
   if (showGhost && activePiece && ghostY !== undefined) {
-    ctx.globalAlpha = 0.25;
+    const ghostColor = getColorForType(activePiece.type);
     for (const [dx, dy] of activePiece.cells) {
       const x = dx;
       const y = ghostY + (dy - activePiece.y) - BUFFER_HEIGHT;
       if (y >= 0 && y < visibleRows) {
-        drawCell(ctx, x, y, "#94a3b8", s);
+        const px = x * s;
+        const py = y * s;
+        ctx.fillStyle = ghostColor + "1a";
+        ctx.fillRect(px, py, s, s);
+        ctx.strokeStyle = ghostColor + "99";
+        ctx.lineWidth = Math.max(1, s * 0.06);
+        ctx.strokeRect(px + ctx.lineWidth / 2, py + ctx.lineWidth / 2, s - ctx.lineWidth, s - ctx.lineWidth);
       }
     }
-    ctx.globalAlpha = 1;
   }
 
   // Active piece

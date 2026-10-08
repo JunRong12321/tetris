@@ -30,16 +30,23 @@ export function SoloGame({ onExit, seed, startLevel }: SoloGameProps) {
   const pausedRef = useRef<boolean>(false);
   const [paused, setPaused] = useState(false);
   const [clearFlash, setClearFlash] = useState(false);
+  const [clearLabel, setClearLabel] = useState<string | null>(null);
   const clearFlashTimerRef = useRef<number | null>(null);
+  const clearLabelTimerRef = useRef<number | null>(null);
   const inputRef = useRef<InputHandler>(new InputHandler());
   const [, forceRender] = useState(0);
 
   const updateState = (next: GameState) => {
     const previous = stateRef.current;
     if (next.lines > previous.lines) {
+      const cleared = next.lines - previous.lines;
       setClearFlash(true);
+      const labels: Record<number, string> = { 1: "SINGLE", 2: "DOUBLE", 3: "TRIPLE", 4: "TETRIS!" };
+      setClearLabel(labels[cleared] ?? null);
       if (clearFlashTimerRef.current !== null) window.clearTimeout(clearFlashTimerRef.current);
       clearFlashTimerRef.current = window.setTimeout(() => setClearFlash(false), 300);
+      if (clearLabelTimerRef.current !== null) window.clearTimeout(clearLabelTimerRef.current);
+      clearLabelTimerRef.current = window.setTimeout(() => setClearLabel(null), cleared >= 4 ? 1200 : 800);
     }
     stateRef.current = next;
     setGameState(next);
@@ -64,6 +71,7 @@ export function SoloGame({ onExit, seed, startLevel }: SoloGameProps) {
     return () => {
       cancelAnimationFrame(rafRef.current);
       if (clearFlashTimerRef.current !== null) window.clearTimeout(clearFlashTimerRef.current);
+      if (clearLabelTimerRef.current !== null) window.clearTimeout(clearLabelTimerRef.current);
     };
   }, []);
 
@@ -118,6 +126,7 @@ export function SoloGame({ onExit, seed, startLevel }: SoloGameProps) {
             paused={paused}
             clearFlash={clearFlash}
           />
+          {clearLabel && <div className={`clear-label ${clearLabel === "TETRIS!" ? "clear-label-tetris" : ""}`}>{clearLabel}</div>}
         </div>
 
         <aside className="game-side-right">

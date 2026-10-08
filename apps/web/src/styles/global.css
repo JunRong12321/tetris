@@ -181,6 +181,13 @@ body {
   opacity: 0.6;
 }
 
+.landing-hint {
+  font-size: 12px;
+  color: var(--text-muted);
+  text-align: center;
+  letter-spacing: 0.05em;
+}
+
 /* ----- Buttons ----- */
 .btn {
   font-family: var(--font-sans);
@@ -307,6 +314,7 @@ body {
 }
 
 .game-board-center {
+  position: relative;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -886,6 +894,66 @@ body {
 
 .online-side-panel {
   align-self: center;
+}
+
+/* ----- Server Warning ----- */
+.server-warning {
+  width: 100%;
+  padding: var(--space-4);
+  background: rgba(251, 191, 36, 0.08);
+  border: 1px solid rgba(251, 191, 36, 0.25);
+  border-radius: var(--radius-md);
+  text-align: center;
+}
+
+.server-warning p {
+  color: var(--warning);
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.server-warning .server-hint {
+  color: var(--text-secondary);
+  font-size: 12px;
+  margin-top: var(--space-2);
+}
+
+/* ----- Clear Label Popup ----- */
+.clear-label {
+  position: absolute;
+  top: 28%;
+  left: 50%;
+  transform: translateX(-50%);
+  font-family: var(--font-mono);
+  font-size: 24px;
+  font-weight: 700;
+  letter-spacing: 0.15em;
+  color: var(--accent);
+  text-shadow: 0 0 24px rgba(34, 211, 238, 0.6);
+  pointer-events: none;
+  animation: clearLabelPop 800ms ease-out forwards;
+  z-index: 10;
+}
+
+.clear-label-tetris {
+  font-size: 32px;
+  color: #fbbf24;
+  text-shadow: 0 0 34px rgba(251, 191, 36, 0.7);
+  animation: clearLabelPopTetris 1200ms ease-out forwards;
+}
+
+@keyframes clearLabelPop {
+  0% { opacity: 0; transform: translateX(-50%) translateY(8px) scale(0.8); }
+  20% { opacity: 1; transform: translateX(-50%) translateY(0) scale(1.1); }
+  40% { transform: translateX(-50%) translateY(0) scale(1); }
+  100% { opacity: 0; transform: translateX(-50%) translateY(-16px) scale(1); }
+}
+
+@keyframes clearLabelPopTetris {
+  0% { opacity: 0; transform: translateX(-50%) translateY(8px) scale(0.6); }
+  15% { opacity: 1; transform: translateX(-50%) translateY(0) scale(1.3); }
+  30% { transform: translateX(-50%) translateY(0) scale(1); }
+  100% { opacity: 0; transform: translateX(-50%) translateY(-24px) scale(1); }
 }
 
 /* ----- Reduced Motion ----- */

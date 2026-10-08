@@ -39,10 +39,12 @@ interface MatchState {
   status: "playing" | "finished";
 }
 
-const serverUrl = import.meta.env.VITE_SERVER_URL ?? "ws://localhost:8080";
+const serverUrl = import.meta.env.VITE_SERVER_URL ?? "";
 
 export function OnlineBattle({ onExit }: OnlineBattleProps) {
-  const [connection, setConnection] = useState<"offline" | "connecting" | "connected">("offline");
+  const [connection, setConnection] = useState<"offline" | "connecting" | "connected">(
+    serverUrl ? "offline" : "offline",
+  );
   const [room, setRoom] = useState<RoomState | null>(null);
   const [match, setMatch] = useState<MatchState | null>(null);
   const [roomInput, setRoomInput] = useState("");
@@ -63,6 +65,10 @@ export function OnlineBattle({ onExit }: OnlineBattleProps) {
   }, []);
 
   const connect = useCallback(() => {
+    if (!serverUrl) {
+      setConnection("offline");
+      return;
+    }
     if (socketRef.current?.readyState === WebSocket.OPEN) return;
     setConnection("connecting");
     setErrorMessage(null);
@@ -79,7 +85,7 @@ export function OnlineBattle({ onExit }: OnlineBattleProps) {
     };
     socket.onerror = () => {
       setConnection("offline");
-      setErrorMessage("The battle server is unavailable right now.");
+      setErrorMessage(null);
     };
     socket.onclose = () => setConnection("offline");
   }, []);
@@ -150,17 +156,25 @@ export function OnlineBattle({ onExit }: OnlineBattleProps) {
     window.setTimeout(() => setCopied(false), 1500);
   };
 
+  const serverConfigured = Boolean(serverUrl);
+
   if (!room) {
     return (
       <div className="screen landing-screen online-screen">
         <div className="online-panel">
-          <Button variant="ghost" onClick={onExit}>← BACK</Button>
+          <Button variant="ghost" onClick={onExit}>{"\u2190"} BACK</Button>
           <h1 className="online-title">ONLINE BATTLE</h1>
           <p className="online-description">Create a room and invite another player, or join a room with a code.</p>
           <div className={`connection-pill connection-${connection}`}>
-            <span className="status-icon">{connection === "connected" ? "●" : "○"}</span>
+            <span className="status-icon">{connection === "connected" ? "\u25CF" : "\u25CB"}</span>
             {connection === "connected" ? "SERVER CONNECTED" : connection === "connecting" ? "CONNECTING" : "SERVER OFFLINE"}
           </div>
+          {!serverConfigured && (
+            <div className="server-warning">
+              <p>The battle server is not configured yet. Online multiplayer requires a separate WebSocket server.</p>
+              <p className="server-hint">Solo Play is always available from the main menu.</p>
+            </div>
+          )}
           <div className="online-actions">
             <Button variant="primary" size="lg" disabled={connection !== "connected"} onClick={createRoom}>CREATE ROOM</Button>
             <div className="join-row">
@@ -181,7 +195,7 @@ export function OnlineBattle({ onExit }: OnlineBattleProps) {
     );
   }
 
-  if (!match || room.status !== "PLAYING" && room.status !== "FINISHED") {
+  if (!match || (room.status !== "PLAYING" && room.status !== "FINISHED")) {
     return <Lobby room={room} countdown={countdown} copied={copied} errorMessage={errorMessage} onCopy={copyRoom} onReady={ready} onLeave={leave} />;
   }
 
@@ -191,18 +205,18 @@ export function OnlineBattle({ onExit }: OnlineBattleProps) {
   return (
     <div className="screen game-screen online-game">
       <header className="game-header">
-        <Button variant="ghost" onClick={leave}>← LEAVE</Button>
+        <Button variant="ghost" onClick={leave}>{"\u2190"} LEAVE</Button>
         <div className="game-status-tag">ROOM {room.roomCode}</div>
-        <div className="connection-pill connection-connected">● CONNECTED</div>
+        <div className="connection-pill connection-connected">{"\u25CF"} CONNECTED</div>
       </header>
       <div className="online-layout">
         <div className="online-main-board">
-          <div className="online-player-label">YOU · PLAYER {room.playerId}</div>
+          <div className="online-player-label">YOU {"\u00B7"} PLAYER {room.playerId}</div>
           <GameBoard board={toBoard(player.board)} activePiece={toActive(player.active)} ghostY={undefined} cellSize={30} clearFlash={clearFlash} />
           <div className="online-stats"><strong>{player.score.toLocaleString()}</strong><span>SCORE</span><strong>{player.lines}</strong><span>LINES</span><strong>{player.level}</strong><span>LEVEL</span></div>
         </div>
         <div className="online-opponent-column">
-          <div className="online-player-label">OPPONENT · PLAYER {room.playerId === 1 ? 2 : 1}</div>
+          <div className="online-player-label">OPPONENT {"\u00B7"} PLAYER {room.playerId === 1 ? 2 : 1}</div>
           <GameBoard board={toBoard(opponent.board)} activePiece={toActive(opponent.active)} cellSize={16} clearFlash={clearFlash} />
           <div className="online-opponent-stats"><span>{opponent.score.toLocaleString()} SCORE</span><span>{opponent.lines} LINES</span></div>
         </div>
@@ -225,13 +239,13 @@ function Lobby({ room, countdown, copied, errorMessage, onCopy, onReady, onLeave
   return (
     <div className="screen landing-screen online-screen">
       <div className="online-panel lobby-panel">
-        <Button variant="ghost" onClick={onLeave}>← EXIT</Button>
+        <Button variant="ghost" onClick={onLeave}>{"\u2190"} EXIT</Button>
         <span className="eyebrow">WAITING LOBBY</span>
         <h1 className="online-title">ROOM READY</h1>
         <button className="room-code" onClick={onCopy} aria-label="Copy room code">{room.roomCode}<span>{copied ? "COPIED" : "COPY CODE"}</span></button>
         <div className="lobby-players"><LobbyPlayer label={`PLAYER ${room.playerId}`} connected={self?.connected ?? false} ready={self?.ready ?? false} /><span className="vs-label">VS</span><LobbyPlayer label={opponent ? `PLAYER ${opponent.playerId}` : "PLAYER 2"} connected={opponent?.connected ?? false} ready={opponent?.ready ?? false} /></div>
         <Button variant={self?.ready ? "secondary" : "primary"} size="lg" disabled={!opponent?.connected || room.status === "COUNTDOWN"} onClick={() => onReady(!(self?.ready ?? false))}>{self?.ready ? "CANCEL READY" : "READY"}</Button>
-        {countdown !== null && <div className="lobby-countdown">MATCH STARTING · {countdown}</div>}
+        {countdown !== null && <div className="lobby-countdown">MATCH STARTING {"\u00B7"} {countdown}</div>}
         <p className="lobby-help">Share this code with the other player. Both players must be ready.</p>
         {errorMessage && <p className="error-message">{errorMessage}</p>}
       </div>

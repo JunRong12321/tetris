@@ -33,6 +33,8 @@ export function LandingScreen({ onSoloPlay, onOnlineBattle }: LandingScreenProps
           </Button>
         </div>
 
+        <p className="landing-hint">Solo Play is always available. Online Battle requires a separate server.</p>
+
         <div className="controls-guide">
           <h2 className="controls-title">CONTROLS</h2>
           <div className="controls-grid">
