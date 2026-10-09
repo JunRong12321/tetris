@@ -20,7 +20,7 @@ import { HoldPanel } from "./HoldPanel";
 import { NextQueue } from "./NextQueue";
 import { Button } from "./Button";
 import { Modal } from "./Modal";
-import { InputHandler, KEY_BINDINGS } from "../game/input";
+import { InputHandler } from "../game/input";
 
 interface OnlineBattleProps {
   onExit: () => void;
@@ -108,8 +108,6 @@ export function OnlineBattle({ onExit }: OnlineBattleProps) {
   const channelRef = useRef<ReturnType<typeof supabase.channel> | null>(null);
   const pendingGarbageRef = useRef<number>(0);
   const gameOverSentRef = useRef(false);
-  const rematchRef = useRef(false);
-  const [, forceRender] = useState(0);
 
   const updateState = useCallback((next: GameState) => {
     const previous = stateRef.current;
@@ -251,7 +249,6 @@ export function OnlineBattle({ onExit }: OnlineBattleProps) {
   const startMatch = useCallback(() => {
     setView("game");
     gameOverSentRef.current = false;
-    rematchRef.current = false;
     pendingGarbageRef.current = 0;
     const game = createGame(seed, { startLevel: 1 });
     stateRef.current = game;
@@ -276,25 +273,22 @@ export function OnlineBattle({ onExit }: OnlineBattleProps) {
           } else if (payload.type === "snapshot" && payload.snapshot) {
             setOpponent(payload.snapshot);
           } else if (payload.type === "rematch") {
-            rematchRef.current = true;
-            // If we haven't started rematch yet, start now
-            setView((currentView) => {
-              if (currentView === "game") {
-                return currentView;
-              }
-              return currentView;
-            });
+            setWinner(null);
+            setGameState(null);
+            stateRef.current = null;
+            setOpponent(null);
+            gameOverSentRef.current = false;
+            pendingGarbageRef.current = 0;
+            setView("lobby");
           }
         })
-        .on("postgres_changes", { event: "*", schema: "public", table: "mp_rooms", filter: `code=eq.${code}` },
-          (payload: { new: RoomData }) => {
-            const data = payload.new;
-            setRoom(data);
-
-            if (data.status === "countdown") {
-              // countdown effect will handle transition
-            } else if (data.status === "finished" && data.winner) {
-              setWinner(data.winner as PlayerId);
+        .on<RoomData>("postgres_changes",
+          { event: "*", schema: "public", table: "mp_rooms", filter: `code=eq.${code}` },
+          (payload) => {
+            const data = payload.new as RoomData;
+            if (data) {
+              setRoom(data);
+              if (data.seed) setSeed(data.seed);
             }
           },
         )
@@ -434,40 +428,28 @@ export function OnlineBattle({ onExit }: OnlineBattleProps) {
     if (!room) return;
     const newSeed = Math.floor(Math.random() * 1e9);
 
-    if (rematchRef.current) {
-      // Opponent already requested rematch - start new match
-      setSeed(newSeed);
-      const game = createGame(newSeed, { startLevel: 1 });
-      stateRef.current = game;
-      setGameState(game);
-      gameOverSentRef.current = false;
-      pendingGarbageRef.current = 0;
-      setWinner(null);
-      setView("game");
-    } else {
-      // Tell opponent we want rematch
-      channelRef.current?.send({
-        type: "broadcast",
-        event: "msg",
-        payload: { type: "rematch" } as BroadcastMessage,
-      });
-      // Reset room status
-      await supabase
-        .from("mp_rooms")
-        .update({ status: "waiting", p1_ready: false, p2_ready: false, winner: null, seed: newSeed, updated_at: new Date().toISOString() })
-        .eq("code", room.code);
-      setSeed(newSeed);
-      setView("lobby");
-    }
-    rematchRef.current = false;
-  }, [room]);
+    // Tell opponent to go back to lobby
+    channelRef.current?.send({
+      type: "broadcast",
+      event: "msg",
+      payload: { type: "rematch" } as BroadcastMessage,
+    });
 
-  // Update room status when both rematch - watch for room status changes
-  useEffect(() => {
-    if (room?.status === "countdown" && view === "lobby") {
-      // countdown effect handles it
-    }
-  }, [room?.status, view]);
+    // Reset room to waiting with a new seed
+    await supabase
+      .from("mp_rooms")
+      .update({ status: "waiting", p1_ready: false, p2_ready: false, winner: null, seed: newSeed, updated_at: new Date().toISOString() })
+      .eq("code", room.code);
+
+    setSeed(newSeed);
+    setWinner(null);
+    setGameState(null);
+    stateRef.current = null;
+    setOpponent(null);
+    gameOverSentRef.current = false;
+    pendingGarbageRef.current = 0;
+    setView("lobby");
+  }, [room]);
 
   const copyRoom = async () => {
     if (!roomCode) return;
