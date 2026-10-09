@@ -86,11 +86,13 @@ export function OnlineBattle({ onExit }: OnlineBattleProps) {
   const [roomCode, setRoomCode] = useState("");
   const [roomInput, setRoomInput] = useState("");
   const [seed, setSeed] = useState(0);
+  const seedRef = useRef(0);
   const [playerId, setPlayerId] = useState<PlayerId>(1);
   const [room, setRoom] = useState<RoomData | null>(null);
   const [countdown, setCountdown] = useState<number | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
+  const [opponentLeft, setOpponentLeft] = useState(false);
 
   // game state (local authoritative for your own board)
   const [gameState, setGameState] = useState<GameState | null>(null);
@@ -108,6 +110,11 @@ export function OnlineBattle({ onExit }: OnlineBattleProps) {
   const channelRef = useRef<ReturnType<typeof supabase.channel> | null>(null);
   const pendingGarbageRef = useRef<number>(0);
   const gameOverSentRef = useRef(false);
+  const startMatchRef = useRef<(() => void) | null>(null);
+  // Keep seedRef in sync with seed state
+  useEffect(() => {
+    seedRef.current = seed;
+  }, [seed]);
 
   const updateState = useCallback((next: GameState) => {
     const previous = stateRef.current;
@@ -224,6 +231,19 @@ export function OnlineBattle({ onExit }: OnlineBattleProps) {
     return () => handler.detach();
   }, [view, playerId, updateState]);
 
+  const startMatch = useCallback(() => {
+    const currentSeed = seedRef.current;
+    if (!currentSeed) return;
+    setView("game");
+    gameOverSentRef.current = false;
+    pendingGarbageRef.current = 0;
+    const game = createGame(currentSeed, { startLevel: 1 });
+    stateRef.current = game;
+    setGameState(game);
+    setOpponent(null);
+    setWinner(null);
+  }, []);
+
   // Countdown effect
   useEffect(() => {
     if (view !== "lobby" || room?.status !== "countdown") {
@@ -236,7 +256,7 @@ export function OnlineBattle({ onExit }: OnlineBattleProps) {
       const remaining = Math.max(0, COUNTDOWN_MS - elapsed);
       if (remaining === 0) {
         setCountdown(null);
-        startMatch();
+        startMatchRef.current?.();
         return;
       }
       setCountdown(Math.ceil(remaining / 1000));
@@ -246,16 +266,20 @@ export function OnlineBattle({ onExit }: OnlineBattleProps) {
     return () => window.clearInterval(timer);
   }, [view, room?.status]);
 
-  const startMatch = useCallback(() => {
-    setView("game");
-    gameOverSentRef.current = false;
-    pendingGarbageRef.current = 0;
-    const game = createGame(seed, { startLevel: 1 });
-    stateRef.current = game;
-    setGameState(game);
-    setOpponent(null);
-    setWinner(null);
-  }, [seed]);
+  // Keep startMatchRef in sync
+  useEffect(() => {
+    startMatchRef.current = startMatch;
+  }, [startMatch]);
+
+  // Detect opponent leaving during game
+  useEffect(() => {
+    if (view !== "game" || !room) return;
+    const isP1 = room.p1_session === sessionId;
+    const opponentConnected = isP1 ? room.p2_session !== null : room.p1_session !== null;
+    if (!opponentConnected && !winner) {
+      setOpponentLeft(true);
+    }
+  }, [room, view, sessionId, winner]);
 
   // Subscribe to realtime channel when room is created/joined
   const subscribeChannel = useCallback(
@@ -288,7 +312,7 @@ export function OnlineBattle({ onExit }: OnlineBattleProps) {
             const data = payload.new as RoomData;
             if (data) {
               setRoom(data);
-              if (data.seed) setSeed(data.seed);
+              if (data.seed) { seedRef.current = data.seed; setSeed(data.seed); }
             }
           },
         )
@@ -311,9 +335,16 @@ export function OnlineBattle({ onExit }: OnlineBattleProps) {
   // Create room
   const createRoom = useCallback(async () => {
     setErrorMessage(null);
+    setOpponentLeft(false);
     const code = generateRoomCode();
     const roomSeed = Math.floor(Math.random() * 1e9);
     try {
+      // Clean up rooms older than 1 hour
+      await supabase
+        .from("mp_rooms")
+        .delete()
+        .lt("updated_at", new Date(Date.now() - 60 * 60 * 1000).toISOString());
+
       const { error } = await supabase.from("mp_rooms").insert({
         code,
         seed: roomSeed,
@@ -325,6 +356,7 @@ export function OnlineBattle({ onExit }: OnlineBattleProps) {
         return;
       }
       setRoomCode(code);
+      seedRef.current = roomSeed;
       setSeed(roomSeed);
       setPlayerId(1);
       setView("lobby");
@@ -376,6 +408,7 @@ export function OnlineBattle({ onExit }: OnlineBattleProps) {
       }
 
       setRoomCode(code);
+      seedRef.current = roomData.seed;
       setSeed(roomData.seed);
       setPlayerId(2);
       setView("lobby");
@@ -421,12 +454,14 @@ export function OnlineBattle({ onExit }: OnlineBattleProps) {
     stateRef.current = null;
     setOpponent(null);
     setWinner(null);
+    setOpponentLeft(false);
   }, [room]);
 
   // Rematch
   const rematch = useCallback(async () => {
     if (!room) return;
     const newSeed = Math.floor(Math.random() * 1e9);
+    setOpponentLeft(false);
 
     // Tell opponent to go back to lobby
     channelRef.current?.send({
@@ -441,6 +476,7 @@ export function OnlineBattle({ onExit }: OnlineBattleProps) {
       .update({ status: "waiting", p1_ready: false, p2_ready: false, winner: null, seed: newSeed, updated_at: new Date().toISOString() })
       .eq("code", room.code);
 
+    seedRef.current = newSeed;
     setSeed(newSeed);
     setWinner(null);
     setGameState(null);
@@ -588,6 +624,15 @@ export function OnlineBattle({ onExit }: OnlineBattleProps) {
           <p className="online-result-copy">Room {roomCode} has ended.</p>
           <div className="result-actions">
             <Button variant="primary" onClick={rematch}>REMATCH</Button>
+            <Button variant="secondary" onClick={leaveRoom}>EXIT TO MENU</Button>
+          </div>
+        </div>
+      </Modal>
+      <Modal open={opponentLeft} dismissable={false}>
+        <div className="result-modal">
+          <h2 className="result-title">OPPONENT LEFT</h2>
+          <p className="online-result-copy">The other player has disconnected.</p>
+          <div className="result-actions">
             <Button variant="secondary" onClick={leaveRoom}>EXIT TO MENU</Button>
           </div>
         </div>
