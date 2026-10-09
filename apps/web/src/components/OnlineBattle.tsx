@@ -14,7 +14,7 @@ import {
   type PlayerAction,
   type Rotation,
 } from "@tetris/game-engine";
-import { supabase } from "../lib/supabase";
+import { supabase, supabaseConfigured } from "../lib/supabase";
 import { GameBoard } from "./GameBoard";
 import { HoldPanel } from "./HoldPanel";
 import { NextQueue } from "./NextQueue";
@@ -467,8 +467,17 @@ export function OnlineBattle({ onExit }: OnlineBattleProps) {
           <Button variant="ghost" onClick={onExit}>{"\u2190"} BACK</Button>
           <h1 className="online-title">ONLINE BATTLE</h1>
           <p className="online-description">Create a room and invite a friend, or join with a code.</p>
+          <div className={`connection-pill ${supabaseConfigured ? "connection-connected" : "connection-offline"}`}>
+            <span className="status-icon">{supabaseConfigured ? "\u25CF" : "\u25CB"}</span>
+            {supabaseConfigured ? "ONLINE" : "NOT CONFIGURED"}
+          </div>
+          {!supabaseConfigured && (
+            <div className="server-warning">
+              <p>Online multiplayer is not configured. Solo Play is available from the main menu.</p>
+            </div>
+          )}
           <div className="online-actions">
-            <Button variant="primary" size="lg" onClick={createRoom}>CREATE ROOM</Button>
+            <Button variant="primary" size="lg" disabled={!supabaseConfigured} onClick={createRoom}>CREATE ROOM</Button>
             <div className="join-row">
               <input
                 className="room-input"
@@ -478,7 +487,7 @@ export function OnlineBattle({ onExit }: OnlineBattleProps) {
                 placeholder="ROOM CODE"
                 aria-label="Room code"
               />
-              <Button variant="secondary" size="lg" onClick={joinRoom}>JOIN</Button>
+              <Button variant="secondary" size="lg" disabled={!supabaseConfigured} onClick={joinRoom}>JOIN</Button>
             </div>
           </div>
           {errorMessage && <p className="error-message">{errorMessage}</p>}
