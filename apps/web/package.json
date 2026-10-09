@@ -10,6 +10,7 @@
     "typecheck": "tsc --noEmit -p tsconfig.json"
   },
   "dependencies": {
+    "@supabase/supabase-js": "^2.117.3",
     "@tetris/game-engine": "*",
     "@tetris/protocol": "*",
     "react": "^19.1.0",
