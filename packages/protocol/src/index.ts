@@ -9,6 +9,8 @@ export const clientMessageSchema = z.discriminatedUnion("type", [
   envelope.extend({ type: z.literal("JOIN_ROOM"), roomCode: z.string().regex(/^[A-Z0-9]{6}$/), sessionId: z.string().min(16).max(128) }),
   envelope.extend({ type: z.literal("READY"), ready: z.boolean() }),
   envelope.extend({ type: z.literal("INPUT"), action: z.enum(PLAYER_ACTIONS), sequence: z.number().int().nonnegative().max(10_000_000) }),
+  envelope.extend({ type: z.literal("QUICK_MATCH"), sessionId: z.string().min(16).max(128) }),
+  envelope.extend({ type: z.literal("CANCEL_QUICK_MATCH") }),
   envelope.extend({ type: z.literal("REMATCH") }),
   envelope.extend({ type: z.literal("LEAVE") }),
   envelope.extend({ type: z.literal("RECONNECT"), roomCode: z.string().regex(/^[A-Z0-9]{6}$/), sessionId: z.string().min(16).max(128) }),
@@ -30,7 +32,8 @@ export interface SerializedPlayer {
   readonly gameOverReason: string | null;
 }
 export type ServerMessage =
-  | { type: "ROOM_STATE"; protocolVersion: 1; roomCode: string; playerId: 1 | 2; players: readonly PlayerPresence[]; status: RoomStatus; countdownEndsAt: number | null }
+  | { type: "ROOM_STATE"; protocolVersion: 1; roomCode: string; playerId: 1 | 2; players: readonly PlayerPresence[]; status: RoomStatus; countdownEndsAt: number | null; quickMatch: boolean }
+  | { type: "QUEUE_STATE"; protocolVersion: 1; searching: boolean; playersOnline: number; playersSearching: number }
   | { type: "MATCH_STATE"; protocolVersion: 1; status: "playing" | "finished"; serverTime: number; player: SerializedPlayer; opponent: SerializedPlayer; winner: 1 | 2 | null }
   | { type: "ERROR"; protocolVersion: 1; code: string; message: string };
 export function parseClientMessage(value: unknown): ClientMessage | null {
