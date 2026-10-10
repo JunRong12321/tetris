@@ -95,11 +95,9 @@ export function OnlineBattle({ onExit }: OnlineBattleProps) {
   const seedRef = useRef(0);
   const [opponent, setOpponent] = useState<OpponentSnapshot | null>(null);
   const [winner, setWinner] = useState<PlayerId | null>(null);
-  const [clearFlash, setClearFlash] = useState(false);
   const [clearLabel, setClearLabel] = useState<string | null>(null);
   const playerIdRef = useRef<PlayerId>(1);
 
-  const clearFlashTimerRef = useRef<number | null>(null);
   const clearLabelTimerRef = useRef<number | null>(null);
   const rafRef = useRef<number>(0);
   const lastTimeRef = useRef<number>(performance.now());
@@ -113,11 +111,8 @@ export function OnlineBattle({ onExit }: OnlineBattleProps) {
     const previous = stateRef.current;
     if (previous && next.lines > previous.lines) {
       const cleared = next.lines - previous.lines;
-      setClearFlash(true);
       const labels: Record<number, string> = { 1: "SINGLE", 2: "DOUBLE", 3: "TRIPLE", 4: "TETRIS!" };
       setClearLabel(labels[cleared] ?? null);
-      if (clearFlashTimerRef.current !== null) window.clearTimeout(clearFlashTimerRef.current);
-      clearFlashTimerRef.current = window.setTimeout(() => setClearFlash(false), 300);
       if (clearLabelTimerRef.current !== null) window.clearTimeout(clearLabelTimerRef.current);
       clearLabelTimerRef.current = window.setTimeout(() => setClearLabel(null), cleared >= 4 ? 1200 : 800);
     }
@@ -166,7 +161,6 @@ export function OnlineBattle({ onExit }: OnlineBattleProps) {
     rafRef.current = requestAnimationFrame(loop);
     return () => {
       cancelAnimationFrame(rafRef.current);
-      if (clearFlashTimerRef.current !== null) window.clearTimeout(clearFlashTimerRef.current);
       if (clearLabelTimerRef.current !== null) window.clearTimeout(clearLabelTimerRef.current);
     };
   }, [updateState]);
