@@ -1,9 +1,13 @@
+# Battle server (WebSocket). Create it with Render: New > Blueprint > pick this repo.
+# Free instances sleep after ~15 minutes idle; the first connection after that
+# takes about a minute, which the web client retries automatically.
 services:
   - type: web
     name: online-tetris-server
     runtime: node
     plan: free
-    buildCommand: npm ci && npm run build
+    # The server runs TypeScript directly with tsx, so only dependencies are needed.
+    buildCommand: npm ci
     startCommand: npm run start --workspace @tetris/server
     healthCheckPath: /health
     envVars:
