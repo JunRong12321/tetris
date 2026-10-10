@@ -270,6 +270,8 @@ Examples:
 - ROTATE_CW
 - ROTATE_CCW
 - HOLD
+- QUICK_MATCH
+- CANCEL_QUICK_MATCH
 - READY
 - REMATCH
 - LEAVE
@@ -373,6 +375,27 @@ FINISHED
 ```
 
 Illegal transitions must be rejected.
+
+---
+
+## 10a. Matchmaking (Quick Match)
+
+Besides room codes, players can be paired automatically.
+
+- Client sends `QUICK_MATCH`. The server puts the socket in an in-memory FIFO queue and replies with `QUEUE_STATE { searching: true }`.
+- When a second, different session arrives, the server creates a room (`quickMatch: true`), seats both players, marks both ready and starts the countdown. The manual ready step is skipped; a rematch still requires both players to ready up.
+- `CANCEL_QUICK_MATCH`, closing the socket, creating/joining a room, or leaving removes the player from the queue. Stale entries (closed sockets) are skipped when pairing.
+- One session cannot be paired with itself. The session identifier is stored per browser tab (`sessionStorage`), so two tabs are two players.
+- `QUEUE_STATE` also carries `playersOnline` and `playersSearching`. It is pushed to players who are not in a room when someone connects, disconnects or enters/leaves the queue (debounced), and periodically as a fallback.
+- The queue is per server instance (see section 16, Scaling Path).
+
+### Lifecycle rules
+
+- Leaving (`LEAVE`) during a match forfeits immediately. Leaving a lobby removes the seat and promotes the remaining player to player 1.
+- A disconnect outside a match keeps the seat for a short lobby grace period (so a refresh can rejoin); a pending countdown is cancelled at once. A match never starts against a disconnected seat.
+- `REMATCH` is idempotent: a second click after the room has already reset is not an error.
+- `RECONNECT` only restores an existing seat; it never creates one. If the same session connects again, the older socket is closed with code 4000.
+- Per-socket token-bucket rate limiting, a 2 KB maximum message size and WebSocket ping/pong heartbeats protect the server. Match state is broadcast only when something visible changed.
 
 ---
 
