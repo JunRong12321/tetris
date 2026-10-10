@@ -33,8 +33,6 @@ export function LandingScreen({ onSoloPlay, onOnlineBattle }: LandingScreenProps
           </Button>
         </div>
 
-        <p className="landing-hint">Solo Play is always available. Online Battle lets you play with a friend in real time.</p>
-
         <div className="controls-guide">
           <h2 className="controls-title">CONTROLS</h2>
           <div className="controls-grid">

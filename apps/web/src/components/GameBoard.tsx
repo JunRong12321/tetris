@@ -8,7 +8,6 @@ interface GameBoardProps {
   ghostY?: number;
   cellSize?: number;
   paused?: boolean;
-  clearFlash?: boolean;
 }
 
 export function GameBoard({
@@ -17,7 +16,6 @@ export function GameBoard({
   ghostY,
   cellSize = 28,
   paused = false,
-  clearFlash = false,
 }: GameBoardProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
@@ -39,7 +37,7 @@ export function GameBoard({
   }, [board, activePiece, ghostY, cellSize, paused]);
 
   return (
-    <div className={`board-wrapper${clearFlash ? " clear-flash" : ""}`} style={{ "--cell-size": `${cellSize}px` } as React.CSSProperties}>
+    <div className="board-wrapper" style={{ "--cell-size": `${cellSize}px` } as React.CSSProperties}>
       <canvas ref={canvasRef} className="game-board-canvas" />
     </div>
   );

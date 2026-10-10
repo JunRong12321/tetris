@@ -80,6 +80,11 @@ export class InputHandler {
     this.arrTimers.delete(action);
   }
 
+  /** Stops all key repeat and forgets held keys, e.g. when the window loses focus mid-press. */
+  releaseAll(): void {
+    this.clearAllTimers();
+  }
+
   private clearAllTimers(): void {
     for (const t of this.dasTimers.values()) clearTimeout(t);
     for (const t of this.arrTimers.values()) clearInterval(t);

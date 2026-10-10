@@ -29,25 +29,10 @@ export function SoloGame({ onExit, seed, startLevel }: SoloGameProps) {
   const lastTimeRef = useRef<number>(performance.now());
   const pausedRef = useRef<boolean>(false);
   const [paused, setPaused] = useState(false);
-  const [clearFlash, setClearFlash] = useState(false);
-  const [clearLabel, setClearLabel] = useState<string | null>(null);
-  const clearFlashTimerRef = useRef<number | null>(null);
-  const clearLabelTimerRef = useRef<number | null>(null);
   const inputRef = useRef<InputHandler>(new InputHandler());
   const [, forceRender] = useState(0);
 
   const updateState = (next: GameState) => {
-    const previous = stateRef.current;
-    if (next.lines > previous.lines) {
-      const cleared = next.lines - previous.lines;
-      setClearFlash(true);
-      const labels: Record<number, string> = { 1: "SINGLE", 2: "DOUBLE", 3: "TRIPLE", 4: "TETRIS!" };
-      setClearLabel(labels[cleared] ?? null);
-      if (clearFlashTimerRef.current !== null) window.clearTimeout(clearFlashTimerRef.current);
-      clearFlashTimerRef.current = window.setTimeout(() => setClearFlash(false), 300);
-      if (clearLabelTimerRef.current !== null) window.clearTimeout(clearLabelTimerRef.current);
-      clearLabelTimerRef.current = window.setTimeout(() => setClearLabel(null), cleared >= 4 ? 1200 : 800);
-    }
     stateRef.current = next;
     setGameState(next);
   };
@@ -68,11 +53,7 @@ export function SoloGame({ onExit, seed, startLevel }: SoloGameProps) {
       rafRef.current = requestAnimationFrame(loop);
     };
     rafRef.current = requestAnimationFrame(loop);
-    return () => {
-      cancelAnimationFrame(rafRef.current);
-      if (clearFlashTimerRef.current !== null) window.clearTimeout(clearFlashTimerRef.current);
-      if (clearLabelTimerRef.current !== null) window.clearTimeout(clearLabelTimerRef.current);
-    };
+    return () => cancelAnimationFrame(rafRef.current);
   }, []);
 
   useEffect(() => {
@@ -124,9 +105,7 @@ export function SoloGame({ onExit, seed, startLevel }: SoloGameProps) {
             ghostY={ghost?.y}
             cellSize={30}
             paused={paused}
-            clearFlash={clearFlash}
           />
-          {clearLabel && <div className={`clear-label ${clearLabel === "TETRIS!" ? "clear-label-tetris" : ""}`}>{clearLabel}</div>}
         </div>
 
         <aside className="game-side-right">

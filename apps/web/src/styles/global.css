@@ -181,13 +181,6 @@ body {
   opacity: 0.6;
 }
 
-.landing-hint {
-  font-size: 12px;
-  color: var(--text-muted);
-  text-align: center;
-  letter-spacing: 0.05em;
-}
-
 /* ----- Buttons ----- */
 .btn {
   font-family: var(--font-sans);
@@ -314,7 +307,6 @@ body {
 }
 
 .game-board-center {
-  position: relative;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -322,7 +314,6 @@ body {
 
 /* ----- Board ----- */
 .board-wrapper {
-  position: relative;
   border: 2px solid var(--border-light);
   border-radius: var(--radius-sm);
   overflow: hidden;
@@ -331,32 +322,6 @@ body {
 
 .game-board-canvas {
   display: block;
-}
-
-.board-wrapper.clear-flash {
-  animation: boardClearFlash 300ms ease-out;
-}
-
-.board-wrapper.clear-flash::after {
-  position: absolute;
-  inset: 0;
-  border: 3px solid rgba(255, 255, 255, 0.9);
-  border-radius: var(--radius-sm);
-  content: "";
-  pointer-events: none;
-  animation: clearSweep 300ms ease-out;
-}
-
-@keyframes boardClearFlash {
-  0% { box-shadow: 0 0 0 rgba(255, 255, 255, 0); }
-  35% { box-shadow: 0 0 34px rgba(255, 255, 255, 0.65); }
-  100% { box-shadow: 0 0 40px rgba(34, 211, 238, 0.08); }
-}
-
-@keyframes clearSweep {
-  0% { opacity: 0; transform: scaleY(0.1); }
-  35% { opacity: 1; transform: scaleY(1); }
-  100% { opacity: 0; transform: scaleY(1); }
 }
 
 /* ----- Panels ----- */
@@ -896,64 +861,87 @@ body {
   align-self: center;
 }
 
-/* ----- Server Warning ----- */
-.server-warning {
-  width: 100%;
-  padding: var(--space-4);
-  background: rgba(251, 191, 36, 0.08);
-  border: 1px solid rgba(251, 191, 36, 0.25);
+/* ----- Online matchmaking ----- */
+.online-count {
+  color: var(--text-secondary);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+}
+
+.online-divider {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  color: var(--text-muted);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+}
+
+.online-divider::before,
+.online-divider::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: var(--border);
+}
+
+.search-status {
+  margin-bottom: var(--space-2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-3);
+  color: var(--accent);
+  font-family: var(--font-mono);
+  font-size: 16px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+}
+
+.search-spinner {
+  width: 16px;
+  height: 16px;
+  border: 2px solid var(--border-light);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: search-spin 0.9s linear infinite;
+}
+
+@keyframes search-spin {
+  to { transform: rotate(360deg); }
+}
+
+.match-banner {
+  /* Floats over the layout so showing it never shifts the boards. */
+  position: fixed;
+  top: 62px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 20;
+  max-width: calc(100vw - var(--space-8));
+  padding: var(--space-1) var(--space-4);
+  border: 1px solid rgba(251, 191, 36, 0.45);
   border-radius: var(--radius-md);
+  background: rgba(251, 191, 36, 0.08);
+  color: var(--warning);
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
   text-align: center;
 }
 
-.server-warning p {
+.online-actions .lobby-help {
+  margin-bottom: var(--space-2);
+}
+
+.incoming-garbage {
   color: var(--warning);
-  font-size: 13px;
-  line-height: 1.5;
-}
-
-.server-warning .server-hint {
-  color: var(--text-secondary);
-  font-size: 12px;
-  margin-top: var(--space-2);
-}
-
-/* ----- Clear Label Popup ----- */
-.clear-label {
-  position: absolute;
-  top: 28%;
-  left: 50%;
-  transform: translateX(-50%);
   font-family: var(--font-mono);
-  font-size: 24px;
+  font-size: 13px;
   font-weight: 700;
-  letter-spacing: 0.15em;
-  color: var(--accent);
-  text-shadow: 0 0 24px rgba(34, 211, 238, 0.6);
-  pointer-events: none;
-  animation: clearLabelPop 800ms ease-out forwards;
-  z-index: 10;
-}
-
-.clear-label-tetris {
-  font-size: 32px;
-  color: #fbbf24;
-  text-shadow: 0 0 34px rgba(251, 191, 36, 0.7);
-  animation: clearLabelPopTetris 1200ms ease-out forwards;
-}
-
-@keyframes clearLabelPop {
-  0% { opacity: 0; transform: translateX(-50%) translateY(8px) scale(0.8); }
-  20% { opacity: 1; transform: translateX(-50%) translateY(0) scale(1.1); }
-  40% { transform: translateX(-50%) translateY(0) scale(1); }
-  100% { opacity: 0; transform: translateX(-50%) translateY(-16px) scale(1); }
-}
-
-@keyframes clearLabelPopTetris {
-  0% { opacity: 0; transform: translateX(-50%) translateY(8px) scale(0.6); }
-  15% { opacity: 1; transform: translateX(-50%) translateY(0) scale(1.3); }
-  30% { transform: translateX(-50%) translateY(0) scale(1); }
-  100% { opacity: 0; transform: translateX(-50%) translateY(-24px) scale(1); }
+  letter-spacing: 0.08em;
 }
 
 /* ----- Reduced Motion ----- */
@@ -963,5 +951,6 @@ body {
     transition-duration: 0.01ms !important;
   }
   .countdown-number { animation: none; }
+  .search-spinner { animation: none; }
   .btn:hover { transform: none; }
 }
